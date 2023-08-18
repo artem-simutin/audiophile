@@ -1,2 +1,3 @@
+pub mod join;
 pub mod ping;
-pub use ping::PING_COMMAND;
+pub mod play;

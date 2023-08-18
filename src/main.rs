@@ -1,4 +1,6 @@
-use audiophile::load_env_from_file;
+use std::collections::HashMap;
+
+use audiophile::{load_env_from_file, server_queries::ServersQueries};
 mod commands;
 mod config;
 use config::Config;
@@ -10,10 +12,14 @@ use serenity::{
     Client,
 };
 
-use commands::*;
+use songbird::SerenityInit;
+
+use commands::join::*;
+use commands::ping::*;
+use commands::play::*;
 
 #[group]
-#[commands(ping)]
+#[commands(ping, play, join)]
 struct General;
 
 struct Handler;
@@ -42,11 +48,13 @@ async fn main() {
     let mut client = Client::builder(config.token, config.intents)
         .framework(framework)
         .event_handler(Handler)
+        .type_map_insert::<ServersQueries>(HashMap::default())
+        .register_songbird()
         .await
         .expect("Error creating client!");
 
-    // If error occurs while starting the client => log the error
-    if let Err(why) = client.start().await {
-        println!("Something went wrong starging the client: {:?}", why)
-    }
+    let _ = client
+        .start()
+        .await
+        .map_err(|why| println!("Client ended: {:?}", why));
 }
