@@ -3,6 +3,8 @@ use std::env;
 use serenity::prelude::GatewayIntents;
 
 pub struct Config {
+    pub name: String,
+    pub url: String,
     pub token: String,
     pub prefix: String,
     pub intents: GatewayIntents,
@@ -20,6 +22,8 @@ impl Config {
             | GatewayIntents::MESSAGE_CONTENT
             | GatewayIntents::DIRECT_MESSAGES;
         return Config {
+            name: "Audiophile".to_string(),
+            url: "https://github.com/artem-simutin/audiophile".to_string(),
             prefix,
             token,
             intents,

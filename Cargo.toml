@@ -18,3 +18,10 @@ version = "*"
 
 [dependencies.songbird]
 version = "*"
+features = ["yt-dlp"]
+
+[dependencies.rusty_ytdl]
+version = "*"
+
+[dependencies.url]
+version = "*"

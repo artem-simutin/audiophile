@@ -1,32 +1,38 @@
+use songbird::SerenityInit;
 use std::collections::HashMap;
 
-use audiophile::{load_env_from_file, server_queries::ServersQueries};
+use audiophile::load_env_from_file;
 mod commands;
 mod config;
+mod server;
 use config::Config;
 use serenity::{
     async_trait,
     framework::{standard::macros::group, StandardFramework},
-    model::prelude::Ready,
+    model::prelude::{Activity, Ready},
     prelude::{Context, EventHandler},
     Client,
 };
-
-use songbird::SerenityInit;
-
-use commands::join::*;
+mod song;
 use commands::ping::*;
 use commands::play::*;
+use server::ServerContexts;
 
 #[group]
-#[commands(ping, play, join)]
+#[commands(ping, play)]
 struct General;
 
 struct Handler;
 
 #[async_trait]
 impl EventHandler for Handler {
-    async fn ready(self: &Self, _ctx: Context, ready: Ready) {
+    async fn ready(self: &Self, ctx: Context, ready: Ready) {
+        let app_config = Config::new();
+        ctx.set_activity(Activity::listening(format!(
+            "you. Prefix: {}",
+            app_config.prefix
+        )))
+        .await;
         println!("✅ Bot is ready! Name is: {}", &ready.user.name);
     }
 }
@@ -48,7 +54,7 @@ async fn main() {
     let mut client = Client::builder(config.token, config.intents)
         .framework(framework)
         .event_handler(Handler)
-        .type_map_insert::<ServersQueries>(HashMap::default())
+        .type_map_insert::<ServerContexts>(HashMap::default())
         .register_songbird()
         .await
         .expect("Error creating client!");
