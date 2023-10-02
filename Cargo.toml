@@ -18,7 +18,7 @@ version = "*"
 
 [dependencies.songbird]
 version = "*"
-features = ["yt-dlp"]
+features = ["yt-dlp", "builtin-queue"]
 
 [dependencies.rusty_ytdl]
 version = "*"

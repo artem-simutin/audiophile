@@ -4,7 +4,6 @@ use std::collections::HashMap;
 use audiophile::load_env_from_file;
 mod commands;
 mod config;
-mod server;
 use config::Config;
 use serenity::{
     async_trait,
@@ -16,7 +15,6 @@ use serenity::{
 mod song;
 use commands::ping::*;
 use commands::play::*;
-use server::ServerContexts;
 
 #[group]
 #[commands(ping, play)]
@@ -24,6 +22,11 @@ struct General;
 
 struct Handler;
 
+/*
+* Event handler for client
+*
+* Handles multiple client events such as ready (when bot is started)
+*/
 #[async_trait]
 impl EventHandler for Handler {
     async fn ready(self: &Self, ctx: Context, ready: Ready) {
@@ -39,7 +42,7 @@ impl EventHandler for Handler {
 
 #[tokio::main]
 async fn main() {
-    // Load enviromental variables from the `.env` file
+    // Load environmental variables from the `.env` file
     load_env_from_file();
 
     // Create new config
@@ -54,7 +57,6 @@ async fn main() {
     let mut client = Client::builder(config.token, config.intents)
         .framework(framework)
         .event_handler(Handler)
-        .type_map_insert::<ServerContexts>(HashMap::default())
         .register_songbird()
         .await
         .expect("Error creating client!");

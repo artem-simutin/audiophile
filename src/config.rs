@@ -8,6 +8,7 @@ pub struct Config {
     pub token: String,
     pub prefix: String,
     pub intents: GatewayIntents,
+    pub avatar_url: String,
 }
 
 impl Config {
@@ -27,6 +28,7 @@ impl Config {
             prefix,
             token,
             intents,
+            avatar_url: "".to_string(),
         };
     }
 }

@@ -12,7 +12,7 @@ pub fn load_env_from_file() {
 pub fn check_message_send_status(status: Result<Message, Error>) {
     if let Err(why) = status {
         println!(
-            "WARNING: Error sending message cuz of Discrod API.\n{}",
+            "WARNING: Error sending message because of Discrod API.\n{}",
             why.to_string()
         )
     }
