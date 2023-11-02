@@ -11,3 +11,14 @@ impl Debug for AudiophileError {
         write!(f, "[{}] {}\n{:?}", self.location, self.message, self.cause)
     }
 }
+
+impl Default for AudiophileError {
+    fn default() -> Self {
+        println!("WARNING: do not use standard audiophile errors");
+        Self {
+            location: "[not specified]",
+            message: "Something went wrong",
+            cause: None,
+        }
+    }
+}

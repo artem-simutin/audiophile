@@ -1,6 +1,7 @@
 mod commands;
 mod config;
 mod prelude;
+mod structs;
 mod utils;
 
 use commands::play::*;
