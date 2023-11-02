@@ -46,8 +46,8 @@ pub enum YoutubeVideoChart {
 
 #[derive(Clone)]
 pub enum YoutubeMyRating {
-    Like,
-    Dislike,
+    // Like,
+    // Dislike,
     None,
 }
 
@@ -55,18 +55,18 @@ pub enum YoutubeMyRating {
 pub struct YoutubeVideoBuilder {
     api: YoutubeAPI,
     parts: Vec<YoutubeVideoPart>,
-    chart: YoutubeVideoChart,
+    // chart: YoutubeVideoChart,
     id: String,
-    my_rating: YoutubeMyRating,
+    // my_rating: YoutubeMyRating,
 }
 
 #[derive(Clone)]
 pub struct YoutubeVideo {
     api: YoutubeAPI,
     parts: Vec<YoutubeVideoPart>,
-    chart: YoutubeVideoChart,
+    // chart: YoutubeVideoChart,
     id: String,
-    my_rating: YoutubeMyRating,
+    // my_rating: YoutubeMyRating,
 }
 
 impl YoutubeVideo {
@@ -117,9 +117,9 @@ impl YoutubeVideoBuilder {
                 YoutubeVideoPart::Status,
                 YoutubeVideoPart::Id,
             ],
-            chart: YoutubeVideoChart::MostPopular,
+            // chart: YoutubeVideoChart::MostPopular,
             id: String::from(id),
-            my_rating: YoutubeMyRating::None,
+            // my_rating: YoutubeMyRating::None,
         }
     }
 
@@ -127,9 +127,9 @@ impl YoutubeVideoBuilder {
         YoutubeVideo {
             api: self.api.clone(),
             parts: self.parts.clone(),
-            chart: self.chart.clone(),
+            // chart: self.chart.clone(),
             id: self.id.clone(),
-            my_rating: self.my_rating.clone(),
+            // my_rating: self.my_rating.clone(),
         }
     }
 }

@@ -1,13 +1,21 @@
+mod commands;
+mod config;
+mod prelude;
+mod utils;
+
+use commands::play::*;
+use serenity::framework::standard::macros::command;
+use serenity::framework::standard::CommandResult;
 use serenity::model::gateway::{GatewayIntents, Ready};
-use serenity::prelude::Context;
+use serenity::model::prelude::Message;
+use serenity::prelude::*;
 use serenity::{async_trait, Client};
 use serenity::{
     framework::{standard::macros::group, StandardFramework},
     prelude::EventHandler,
 };
-
-mod config;
-mod prelude;
+use songbird::SerenityInit;
+use utils::check_msg_err;
 
 struct Handler;
 
@@ -20,7 +28,8 @@ impl EventHandler for Handler {
 
 // static VIDEO_ID: &str = "https://www.youtube.com/watch?v=H2PYtvIYDHE";
 #[group]
-struct Songs;
+#[commands(ping, play)]
+struct General;
 
 #[tokio::main]
 async fn main() {
@@ -36,17 +45,29 @@ async fn main() {
 
     let framework = StandardFramework::new()
         .configure(|c| c.prefix(&config.prefix).ignore_bots(true))
-        .group(&SONGS_GROUP);
+        .group(&GENERAL_GROUP);
 
-    let intents = GatewayIntents::all();
+    let intents = GatewayIntents::all()
+        | GatewayIntents::default()
+        | GatewayIntents::GUILDS
+        | GatewayIntents::GUILD_MESSAGES
+        | GatewayIntents::GUILD_VOICE_STATES
+        | GatewayIntents::DIRECT_MESSAGES;
 
     let mut client = Client::builder(&config.token, intents)
-        .framework(framework)
         .event_handler(Handler)
+        .framework(framework)
+        .register_songbird()
         .await
         .expect("❌ Something went wrong building the client");
 
     if let Err(why) = client.start().await {
-        println!("❌ Something went wrong starting the client: {:?}", why)
+        println!("❌ Something went wrong starting the client: {}", why)
     }
+}
+
+#[command]
+async fn ping(ctx: &Context, msg: &Message) -> CommandResult {
+    check_msg_err(msg.reply(&ctx.http, "Pong! 😎").await);
+    Ok(())
 }

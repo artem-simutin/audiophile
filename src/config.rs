@@ -8,6 +8,10 @@ pub struct Config {
 impl Config {
     pub fn new() -> Self {
         let token = env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
+        // if let Err(why) = validate_token(&token) {
+        //     println!("❌ Your discord token is probably invalid: {:?}", why);
+        //     panic!();
+        // };
         Self {
             token,
             prefix: ">>".to_string(),

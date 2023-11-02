@@ -1,1 +1,5 @@
+# Build files and directories
 /target
+
+# ENVs
+.env
