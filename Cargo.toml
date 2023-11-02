@@ -8,3 +8,9 @@ edition = "2021"
 [dependencies]
 youtube = { path = "youtube" }
 tokio = { version = "*", features = ["macros", "rt-multi-thread"] }
+serenity = { version = "*", features = [
+    "framework",
+    "standard_framework",
+    "rustls_backend",
+] }
+dotenv = "0.15.0"
