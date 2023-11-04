@@ -6,7 +6,7 @@ pub fn fullmatch(haystack: &str, needle: &str) -> Result<bool, AudiophileError> 
     let regex = Regex::new(needle).map_err(|e| AudiophileError {
         message: "Something went wrong creating the regex instance",
         location: "internal REGEX::FULLMATCH",
-        cause: Some(Box::new(e)),
+        // cause: Some(Box::new(e)),
     })?;
     let text_match = match regex.find(haystack) {
         Some(m) => m,

@@ -7,7 +7,11 @@ edition = "2021"
 
 [dependencies]
 youtube = { path = "youtube" }
-tokio = { version = "1.33.0", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1.33.0", features = [
+    "macros",
+    "rt-multi-thread",
+    "signal",
+] }
 serenity = { version = "0.11.7", features = [
     "framework",
     "standard_framework",

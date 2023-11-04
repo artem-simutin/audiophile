@@ -16,6 +16,7 @@ use serenity::{
     prelude::EventHandler,
 };
 use songbird::SerenityInit;
+use structs::queue::ContextData;
 use utils::check_msg_err;
 
 struct Handler;
@@ -58,6 +59,7 @@ async fn main() {
     let mut client = Client::builder(&config.token, intents)
         .event_handler(Handler)
         .framework(framework)
+        .type_map_insert::<ContextData>(ContextData::new())
         .register_songbird()
         .await
         .expect("❌ Something went wrong building the client");
@@ -65,6 +67,19 @@ async fn main() {
     if let Err(why) = client.start().await {
         println!("❌ Something went wrong starting the client: {}", why)
     }
+
+    tokio::spawn(async move {
+        let _ = client
+            .start()
+            .await
+            .map_err(|why| println!("Client ended: {:?}", why));
+    });
+
+    tokio::signal::ctrl_c()
+        .await
+        .expect("failed to receive ctrl+c event");
+
+    println!("Received Ctrl-C, shutting down.");
 }
 
 #[command]

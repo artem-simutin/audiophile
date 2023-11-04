@@ -50,7 +50,7 @@ impl YoutubeAPI {
                         let video_id = params.get("v").ok_or(AudiophileError {
                             location: "youtube api video url parse",
                             message: "The url does not have a valid youtube video id",
-                            cause: None,
+                            // cause: None,
                         })?;
                         video_id.clone()
                     }
@@ -58,8 +58,8 @@ impl YoutubeAPI {
                         return Err(AudiophileError {
                             location: "youtube api video url parser",
                             message: "Cannot parse the url",
-                            cause: Some(Box::new(why)),
-                        })
+                            // cause: Some(Box::new(why)),
+                        });
                     }
                 }
             }

@@ -91,7 +91,7 @@ impl YoutubeVideo {
             .map_err(|e| AudiophileError {
                 location: "youtube video fetch",
                 message: "Something went wrong getting the video",
-                cause: Some(Box::new(e)),
+                // cause: Some(Box::new(e)),
             })?;
         // Test
         let json = response
@@ -100,7 +100,7 @@ impl YoutubeVideo {
             .map_err(|e| AudiophileError {
                 location: "youtube video fetch",
                 message: "Cannot parse json from the response",
-                cause: Some(Box::new(e)),
+                // cause: Some(Box::new(e)),
             })?;
         Ok(json)
     }

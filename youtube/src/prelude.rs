@@ -1,14 +1,21 @@
-use std::{error::Error, fmt::Debug};
+use std::fmt::Debug;
 
 pub struct AudiophileError {
     pub location: &'static str,
     pub message: &'static str,
-    pub cause: Option<Box<dyn Error>>,
+    // pub cause: Option<Box<dyn Error>>,
 }
 
 impl Debug for AudiophileError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "[{}] {}\n{:?}", self.location, self.message, self.cause)
+        write!(
+            f,
+            // "[{}] {}\n{:?}",
+            "[{}] {}\n",
+            self.location,
+            self.message,
+            // self.cause
+        )
     }
 }
 
@@ -18,7 +25,13 @@ impl Default for AudiophileError {
         Self {
             location: "[not specified]",
             message: "Something went wrong",
-            cause: None,
+            // cause: None,
         }
+    }
+}
+
+impl ToString for AudiophileError {
+    fn to_string(&self) -> String {
+        self.message.to_string()
     }
 }

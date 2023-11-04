@@ -3,8 +3,15 @@ use serenity::{
     model::prelude::Message,
     prelude::*,
 };
+use youtube::YoutubeAPI;
 
-use crate::utils::check_msg_err;
+use crate::{
+    structs::{
+        queue::{ContextData},
+        song::Song,
+    },
+    utils::check_msg_err,
+};
 
 #[command]
 #[aliases(p)]
@@ -59,6 +66,86 @@ async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
         .await
         .expect("Songbird placed in at initialization")
         .clone();
+
+    let youtube_api = YoutubeAPI::new();
+    let video = match youtube_api.video(url.as_str()) {
+        Ok(vb) => vb,
+        Err(why) => {
+            check_msg_err(
+                msg.reply(
+                    &ctx.http,
+                    format!(
+                        "Something went wrong building video fetch struct: {}",
+                        why.to_string()
+                    ),
+                )
+                .await,
+            );
+            return Ok(());
+        }
+    };
+    let result = match video.build().fetch().await {
+        Ok(vr) => vr.items,
+        Err(why) => {
+            check_msg_err(
+                msg.reply(
+                    &ctx.http,
+                    format!(
+                        "Something went wrong fetching your song! {}",
+                        why.to_string()
+                    ),
+                )
+                .await,
+            );
+            return Ok(());
+        }
+    };
+    let video = match result.get(0) {
+        Some(vr) => vr,
+        None => {
+            check_msg_err(msg.reply(&ctx.http, "Your video is not found!").await);
+            return Ok(());
+        }
+    };
+    let song = match Song::try_from(video) {
+        Ok(s) => s,
+        Err(why) => {
+            check_msg_err(
+                msg.reply(
+                    &ctx.http,
+                    format!("Something went wrong converting video resourse into song struct! Creator of the bot is bimbo! {}", why.to_string()),
+                )
+                .await,
+            );
+            return Ok(());
+        }
+    };
+
+    {
+        let mut data = ctx.data.write().await;
+        let data = data.get_mut::<ContextData>();
+        let data = match data {
+            Some(d) => d,
+            None => {
+                check_msg_err(
+                    msg.reply(
+                        &ctx.http,
+                        "Something went wrong adding song to the playlist! Tell to my creator that he is a bimbo 💀!",
+                    )
+                    .await,
+                );
+                return Ok(());
+            }
+        };
+        let server_context = data.entry(guild.id).or_default();
+        let voice_channel_context = server_context
+            .voice_queues
+            .entry(voice_channel_id)
+            .or_default();
+
+        voice_channel_context.songs.push_back(song);
+        println!("Queue: {:?}", voice_channel_context.songs);
+    }
 
     let (voice_handler, join_status) = voice_manager.join(guild.id, voice_channel_id).await;
 
