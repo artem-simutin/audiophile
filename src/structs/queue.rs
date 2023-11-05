@@ -32,12 +32,23 @@ impl Default for ServerData {
 }
 
 pub struct Queue {
+    playing: bool,
     pub songs: VecDeque<Song>,
+}
+
+impl Queue {
+    pub fn is_playing(&self) -> bool {
+        self.playing
+    }
+    pub fn set_playing(&mut self, v: bool) -> () {
+        self.playing = v
+    }
 }
 
 impl Default for Queue {
     fn default() -> Self {
         Self {
+            playing: false,
             songs: VecDeque::new(),
         }
     }

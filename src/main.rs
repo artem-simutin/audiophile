@@ -1,6 +1,7 @@
 mod commands;
 mod config;
 mod functions;
+mod handlers;
 mod prelude;
 mod structs;
 mod utils;

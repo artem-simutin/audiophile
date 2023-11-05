@@ -1,6 +1,6 @@
 use youtube::{prelude::AudiophileError, url::Url};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Song {
     pub url: youtube::url::Url,
     pub title: String,
