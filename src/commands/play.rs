@@ -2,14 +2,13 @@ use serenity::{
     framework::standard::{macros::command, Args, CommandResult},
     model::prelude::Message,
     prelude::*,
+    utils::Color,
 };
 use youtube::YoutubeAPI;
 
 use crate::{
-    structs::{
-        queue::{ContextData},
-        song::Song,
-    },
+    functions::play_latest_song::play_latest_song,
+    structs::{embed::AudiophileEmbeds, queue::ContextData, song::Song},
     utils::check_msg_err,
 };
 
@@ -66,6 +65,35 @@ async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
         .await
         .expect("Songbird placed in at initialization")
         .clone();
+
+    {
+        let author_avatar = match msg.author.avatar_url() {
+            Some(aurl) => aurl,
+            None => {
+                "https://logos-world.net/wp-content/uploads/2020/12/Discord-Emblem.png".to_string()
+            }
+        };
+        let author_name = match msg.author_nick(&ctx.http).await {
+            Some(an) => an,
+            None => msg.author.name.clone(),
+        };
+
+        check_msg_err(
+            msg.channel_id
+                .send_message(&ctx.http, |m| {
+                    m.embed(|f| {
+                        f.title(format!("Looking for your song: {}", &url))
+                            .author(|a| {
+                                a.icon_url(author_avatar)
+                                    .name(format!("{} looking for a song!", author_name))
+                            })
+                            .color(Color::BLUE)
+                            .footer(AudiophileEmbeds::footer)
+                    })
+                })
+                .await,
+        );
+    }
 
     let youtube_api = YoutubeAPI::new();
     let video = match youtube_api.video(url.as_str()) {
@@ -137,17 +165,16 @@ async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
                 return Ok(());
             }
         };
-        let server_context = data.entry(guild.id).or_default();
+        let server_context = data.entry(guild.id.into()).or_default();
         let voice_channel_context = server_context
             .voice_queues
             .entry(voice_channel_id)
             .or_default();
 
         voice_channel_context.songs.push_back(song);
-        println!("Queue: {:?}", voice_channel_context.songs);
     }
 
-    let (voice_handler, join_status) = voice_manager.join(guild.id, voice_channel_id).await;
+    let (_voice_handler, join_status) = voice_manager.join(guild.id, voice_channel_id).await;
 
     if let Err(why) = join_status {
         check_msg_err(
@@ -163,23 +190,9 @@ async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
         return Ok(());
     }
 
-    let mut voice_handler = voice_handler.lock().await;
-
-    let song_source = match songbird::ytdl(url).await {
-        Ok(s) => s,
-        Err(why) => {
-            check_msg_err(
-                msg.reply(
-                    &ctx.http,
-                    format!("Somethign went wrong creating source from URL: {}", why),
-                )
-                .await,
-            );
-            return Ok(());
-        }
+    if let Err(why) = play_latest_song(&ctx, &guild.id.into(), &voice_channel_id).await {
+        check_msg_err(msg.reply(&ctx.http, why.to_string()).await)
     };
-
-    voice_handler.play_source(song_source);
 
     Ok(())
 }

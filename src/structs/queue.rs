@@ -1,9 +1,7 @@
 use std::collections::{HashMap, VecDeque};
 
-use serenity::{
-    model::prelude::{ChannelId, GuildId},
-    prelude::TypeMapKey,
-};
+use serenity::{model::prelude::ChannelId, prelude::TypeMapKey};
+use songbird::id::GuildId;
 
 use super::song::Song;
 
