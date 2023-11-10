@@ -9,27 +9,30 @@ pub async fn play_latest_song(
     guild_id: &GuildId,
     voice_channel_id: &ChannelId,
 ) -> Result<Song, AudiophileError> {
-    let data = ctx.data.read().await;
-    let data = data.get::<ContextData>().ok_or(AudiophileError {
-        location: "play_latest_song",
-        message: "Cannot get bot context data",
-    })?;
-    let server_data = data.get(guild_id).ok_or(AudiophileError {
-        location: "play_latest_song",
-        message: "Cannot get the server context with this guild id",
-    })?;
-    let queue = server_data
-        .voice_queues
-        .get(voice_channel_id)
-        .ok_or(AudiophileError {
+    let latest_song = {
+        let data = ctx.data.read().await;
+        let data = data.get::<ContextData>().ok_or(AudiophileError {
             location: "play_latest_song",
-            message: "Cannot get current voice channel data context",
+            message: "Cannot get bot context data",
         })?;
+        let server_data = data.get(guild_id).ok_or(AudiophileError {
+            location: "play_latest_song",
+            message: "Cannot get the server context with this guild id",
+        })?;
+        let queue = server_data
+            .voice_queues
+            .get(voice_channel_id)
+            .ok_or(AudiophileError {
+                location: "play_latest_song",
+                message: "Cannot get current voice channel data context",
+            })?;
 
-    let latest_song = queue.songs.front().ok_or(AudiophileError {
-        location: "play_latest_song",
-        message: "There is no song to play in the queue",
-    })?;
+        let latest_song = queue.songs.front().ok_or(AudiophileError {
+            location: "play_latest_song",
+            message: "There is no song to play in the queue",
+        })?;
+        latest_song.clone()
+    };
 
     let sb = songbird::get(ctx)
         .await
@@ -67,9 +70,10 @@ pub async fn play_latest_song(
         queue.set_playing(true)
     }
 
-    let mut handler = handler.lock().await;
+    {
+        let mut handler = handler.lock().await;
+        handler.play_source(source);
+    }
 
-    handler.play_source(source);
-
-    Ok(latest_song.clone())
+    Ok(latest_song)
 }

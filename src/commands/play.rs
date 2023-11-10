@@ -155,44 +155,73 @@ async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
             .voice_queues
             .entry(voice_channel_id)
             .or_default();
-        voice_channel_context.songs.push_back(song);
+        voice_channel_context.songs.push_back(song.clone());
     }
-
-    // Get is song already playing or not
-    let data = ctx.data.read().await;
-    let context_data = data
+    let is_playing = {
+        // Get is song already playing or not
+        let data = ctx.data.read().await;
+        let context_data = data
         .get::<ContextData>()
         .expect("Something went wrong adding song to the playlist! Tell to my creator that he is a bimbo 💀!");
-    let server_data = match context_data.get(&guild.id.into()) {
-        Some(sd) => sd,
-        None => {
-            check_msg_err(
-                msg.reply(
-                    &ctx.http,
-                    "No this server data! Creator of this bot is bimbo!",
-                )
-                .await,
-            );
-            return Ok(());
-        }
-    };
-    let queue = match server_data.voice_queues.get(&voice_channel_id) {
-        Some(q) => q,
-        None => {
-            check_msg_err(
-                msg.reply(
-                    &ctx.http,
-                    "There is no queue for this voice channel! The bot creator is bimbo!",
-                )
-                .await,
-            );
-            return Ok(());
-        }
+        let server_data = match context_data.get(&guild.id.into()) {
+            Some(sd) => sd,
+            None => {
+                check_msg_err(
+                    msg.reply(
+                        &ctx.http,
+                        "No this server data! Creator of this bot is bimbo!",
+                    )
+                    .await,
+                );
+                return Ok(());
+            }
+        };
+        let queue = match server_data.voice_queues.get(&voice_channel_id) {
+            Some(q) => q,
+            None => {
+                check_msg_err(
+                    msg.reply(
+                        &ctx.http,
+                        "There is no queue for this voice channel! The bot creator is bimbo!",
+                    )
+                    .await,
+                );
+                return Ok(());
+            }
+        };
+
+        let is_playing = queue.is_playing();
+
+        is_playing
     };
 
-    let is_playing = queue.is_playing();
+    let author_avatar = match msg.author.avatar_url() {
+        Some(aurl) => aurl,
+        None => "https://logos-world.net/wp-content/uploads/2020/12/Discord-Emblem.png".to_string(),
+    };
+    let author_name = match msg.author_nick(&ctx.http).await {
+        Some(an) => an,
+        None => msg.author.name.clone(),
+    };
 
     if is_playing {
+        check_msg_err(
+            msg.channel_id
+                .send_message(&ctx.http, |m| {
+                    m.embed(|e| {
+                        e.title(&song.title)
+                            .url(&song.url.as_str())
+                            .thumbnail(&song.thumbnail_url)
+                            .footer(AudiophileEmbeds::footer)
+                            .color(Color::DARK_GREEN)
+                            .author(|a| {
+                                a.icon_url(&author_avatar)
+                                    .name(format!("{} added to the queue!", author_name))
+                            })
+                    })
+                })
+                .await,
+        );
         return Ok(());
     }
 
@@ -209,15 +238,6 @@ async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
             },
         )
     }
-
-    let author_avatar = match msg.author.avatar_url() {
-        Some(aurl) => aurl,
-        None => "https://logos-world.net/wp-content/uploads/2020/12/Discord-Emblem.png".to_string(),
-    };
-    let author_name = match msg.author_nick(&ctx.http).await {
-        Some(an) => an,
-        None => msg.author.name.clone(),
-    };
 
     match play_latest_song(&ctx, &guild.id.into(), &voice_channel_id).await {
         Ok(s) => {
